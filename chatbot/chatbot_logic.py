@@ -556,6 +556,7 @@ class ChatbotLogic:
         
         # Detect intent
         intent = self.detect_intent(message)
+        self.conversation_state["detected_intent"] = intent
         
         # Extract symptoms if in symptom-gathering mode
         symptoms = self.extract_symptoms(message)
