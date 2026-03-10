@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADMA Healthcare - AI Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary-color: #00a8cc;
+            --secondary-color: #0c8baf;
+            --accent-color: #f0f9ff;
+            --text-dark: #333;
+            --text-light: #666;
+            --white: #ffffff;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --border-radius: 16px;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            padding: 20px;
+            color: var(--white);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* Language Selector */
+        .language-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px;
+            background: var(--accent-color);
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .lang-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+            background: transparent;
+            color: var(--text-light);
+        }
+
+        .lang-btn.active {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        .lang-btn:hover:not(.active) {
+            background: rgba(0, 168, 204, 0.1);
+        }
+
+        /* Chat Container */
+        .chat-container {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .message.bot .avatar {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        .message.user .avatar {
+            background: #4CAF50;
+            color: var(--white);
+        }
+
+        .message-content {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .message.bot .message-content {
+            background: var(--white);
+            color: var(--text-dark);
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.user .message-content {
+            background: var(--primary-color);
+            color: var(--white);
+            border-bottom-right-radius: 4px;
+        }
+
+        /* Doctor Card */
+        .doctor-card {
+            background: var(--white);
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .doctor-card h4 {
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .doctor-card p {
+            font-size: 13px;
+            color: var(--text-light);
+            margin: 4px 0;
+        }
+
+        .doctor-card .rating {
+            color: #ffc107;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 20px;
+            background: var(--white);
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-area input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .input-area button {
+            padding: 14px 24px;
+            background: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .input-area button:hover {
+            background: var(--secondary-color);
+        }
+
+        .input-area button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Disclaimer */
+        .disclaimer {
+            padding: 10px 20px;
+            background: #fff3cd;
+            font-size: 12px;
+            text-align: center;
+            color: #856404;
+        }
+
+        /* Loading Animation */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 10px 15px;
+            background: var(--white);
+            border: 1px solid #e0e0e0;
+            border-radius: 16px;
+            width: fit-content;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: var(--text-light);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-6px); }
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--accent-color);
+        }
+
+        .quick-btn {
+            padding: 8px 14px;
+            background: var(--white);
+            border: 1px solid var(--primary-color);
+            border-radius: 20px;
+            color: var(--primary-color);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-btn:hover {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        /* Status indicator */
+        .status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-light);
+            padding: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #4CAF50;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🏥 ADMA Healthcare</h1>
+            <p>Your AI Health Assistant</p>
+        </div>
+
+        <!-- Language Selector -->
+        <div class="language-selector">
+            <button class="lang-btn active" onclick="setLanguage('en')">English</button>
+            <button class="lang-btn" onclick="setLanguage('ur')">اردو</button>
+            <button class="lang-btn" onclick="setLanguage('ps')">پښتو</button>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <button class="quick-btn" onclick="sendQuickMessage('I need a doctor')">Find Doctor</button>
+            <button class="quick-btn" onclick="sendQuickMessage('medicine for fever')">Medicine Info</button>
+            <button class="quick-btn" onclick="sendQuickMessage('I need a lab test')">Lab Tests</button>
+            <button class="quick-btn" onclick="sendQuickMessage('I have fever and headache')">Symptoms</button>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="chat-container" id="chatContainer">
+            <div class="message bot">
+                <div class="avatar">🤖</div>
+                <div class="message-content" id="welcomeMessage">
+                    Hi! I'm your ADMA healthcare assistant. How can I help you today?
+                </div>
+            </div>
+        </div>
+
+        <!-- Typing Indicator (Hidden by default) -->
+        <div class="typing-indicator" id="typingIndicator" style="display: none; margin: 0 20px;">
+            <span></span><span></span><span></span>
+        </div>
+
+        <!-- Status -->
+        <div class="status">
+            <div class="status-dot"></div>
+            <span>Online - Ready to help</span>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+            <button id="sendBtn" onclick="sendMessage()">Send</button>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer">
+            ⚠️ This is for informational purposes only. Always consult a doctor for medical advice.
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE_URL = 'http://localhost:8000';
+        
+        // State
+        let currentLanguage = 'en';
+        let conversationId = null;
+        let userId = 'user_' + Math.random().toString(36).substr(2, 9);
+
+        // Translations
+        const translations = {
+            en: {
+                welcome: "Hi! I'm your ADMA healthcare assistant. How can I help you today?",
+                placeholder: "Type your message...",
+                send: "Send"
+            },
+            ur: {
+                welcome: "السلام علیکم! میں آپ کا ADMA صحت معاون ہوں۔ آج میں آپ کی کیسے مدد کر سکتا ہوں؟",
+                placeholder: "پیغام لکھیں...",
+                send: "بھیجیں"
+            },
+            ps: {
+                welcome: "سلام! زه ستاسو د ADMA روغني مرستیال یم. نننۍ څنګه مرسته کولای شم؟",
+                placeholder: "پیغام ولیکئ...",
+                send: "استول"
+            }
+        };
+
+        // Initialize
+        window.onload = function() {
+            updateTranslations();
+        };
+
+        // Set Language
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            
+            // Update button styles
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            updateTranslations();
+        }
+
+        // Update translations
+        function updateTranslations() {
+            const t = translations[currentLanguage];
+            document.getElementById('welcomeMessage').textContent = t.welcome;
+            document.getElementById('userInput').placeholder = t.placeholder;
+            document.getElementById('sendBtn').textContent = t.send;
+        }
+
+        // Handle Enter key
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Send Quick Message
+        function sendQuickMessage(message) {
+            document.getElementById('userInput').value = message;
+            sendMessage();
+        }
+
+        // Send Message
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // Add user message to chat
+            addMessage(message, 'user');
+            input.value = '';
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/chat/send`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        message: message,
+                        language: currentLanguage,
+                        conversation_id: conversationId
+                    })
+                });
+
+                const data = await response.json();
+                
+                // Hide typing indicator
+                hideTypingIndicator();
+
+                // Save conversation ID
+                if (data.conversation_id) {
+                    conversationId = data.conversation_id;
+                }
+
+                // Add bot response to chat
+                addMessage(data.bot_reply, 'bot');
+
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+                console.error('Error:', error);
+            }
+        }
+
+        // Add Message to Chat
+        function addMessage(text, sender) {
+            const container = document.getElementById('chatContainer');
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const avatar = sender === 'bot' ? '🤖' : '👤';
+            
+            // Check if text contains doctor info (simple formatting)
+            let formattedText = text;
+            if (text.includes('Dr.')) {
+                formattedText = formatDoctorInfo(text);
+            }
+            
+            messageDiv.innerHTML = `
+                <div class="avatar">${avatar}</div>
+                <div class="message-content">${formattedText}</div>
+            `;
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Format Doctor Information
+        function formatDoctorInfo(text) {
+            // Simple formatting for doctor cards
+            return text.replace(/(Dr\.\s+[A-Za-z]+\s+[A-Za-z]+)/g, '<strong>$1</strong>')
+                       .replace(/\n/g, '<br>');
+        }
+
+        // Show Typing Indicator
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'flex';
+            document.getElementById('chatContainer').scrollTop = document.getElementById('chatContainer').scrollHeight;
+        }
+
+        // Hide Typing Indicator
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
